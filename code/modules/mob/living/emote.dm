@@ -405,6 +405,10 @@
 	key_third_person = "custom"
 	message = null
 
+/datum/emote/living/custom/sign
+	key = "sign"
+	emote_type = EMOTE_VISIBLE
+	
 /datum/emote/living/custom/can_run_emote(mob/user, status_check, intentional)
 	. = ..() && intentional
 

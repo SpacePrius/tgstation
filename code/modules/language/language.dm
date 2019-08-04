@@ -117,4 +117,10 @@
 			return ask_verb
 	return speech_verb
 
+/datum/language/proc/has_flag(flag)
+	if(src.flags == flag)
+		return TRUE
+	else
+		return FALSE
+
 #undef SCRAMBLE_CACHE_LEN

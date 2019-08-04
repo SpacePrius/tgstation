@@ -43,11 +43,11 @@ GLOBAL_LIST_INIT(freqtospan, list(
 /atom/movable/proc/compose_message(atom/movable/speaker, datum/language/message_language, raw_message, radio_freq, list/spans, message_mode, face_name = FALSE)
 	//This proc uses text() because it is faster than appending strings. Thanks BYOND.
 	//Basic span
-	var/spanpart1 = "<span class='[radio_freq ? get_radio_span(radio_freq) : "game say"]'>"
+	var/spanpart1 = "<span class='[(radio_freq && message_langauge.has_flag(LANGUAGE_SIGNLANG)) ? get_radio_span(radio_freq) : "game say"]'>"
 	//Start name span.
 	var/spanpart2 = "<span class='name'>"
 	//Radio freq/name display
-	var/freqpart = radio_freq ? "\[[get_radio_name(radio_freq)]\] " : ""
+	var/freqpart = (radio_freq && message_language.has_flag(LANGUAGE_SIGNLANG)) ? "\[[get_radio_name(radio_freq)]\] " : ""
 	//Speaker name
 	var/namepart = "[speaker.GetVoice()][speaker.get_alt_name()]"
 	if(face_name && ishuman(speaker))
@@ -72,7 +72,7 @@ GLOBAL_LIST_INIT(freqtospan, list(
 /atom/movable/proc/compose_job(atom/movable/speaker, message_langs, raw_message, radio_freq)
 	return ""
 
-/atom/movable/proc/say_mod(input, message_mode)
+/atom/movable/proc/say_mod(input, message_mode, signlang = FALSE)
 	var/ending = copytext(input, length(input))
 	if(copytext(input, length(input) - 1) == "!!")
 		return verb_yell
@@ -80,10 +80,12 @@ GLOBAL_LIST_INIT(freqtospan, list(
 		return verb_ask
 	else if(ending == "!")
 		return verb_exclaim
+	else if (signlang)
+		return verb_sign
 	else
 		return verb_say
 
-/atom/movable/proc/say_quote(input, list/spans=list(speech_span), message_mode)
+/atom/movable/proc/say_quote(input, list/spans=list(speech_span), message_mode, signlang = FALSE)
 	if(!input)
 		input = "..."
 
@@ -91,13 +93,16 @@ GLOBAL_LIST_INIT(freqtospan, list(
 		spans |= SPAN_YELL
 
 	var/spanned = attach_spans(input, spans)
-	return "[say_mod(input, message_mode)], \"[spanned]\""
+	return "[say_mod(input, message_mode, signlang)], \"[spanned]\""
 
 /atom/movable/proc/lang_treat(atom/movable/speaker, datum/language/language, raw_message, list/spans, message_mode)
+	var/signlang = FALSE
+	if(language.has_flag(LANGUAGE_SIGNLANG))
+		signlang = TRUE
 	if(has_language(language))
 		var/atom/movable/AM = speaker.GetSource()
 		if(AM) //Basically means "if the speaker is virtual"
-			return AM.say_quote(raw_message, spans, message_mode)
+			return AM.say_quote(raw_message, spans, message_mode, signlang)
 		else
 			return speaker.say_quote(raw_message, spans, message_mode)
 	else if(language)
@@ -108,6 +113,8 @@ GLOBAL_LIST_INIT(freqtospan, list(
 			return AM.say_quote(raw_message, spans, message_mode)
 		else
 			return speaker.say_quote(raw_message, spans, message_mode)
+	else if(language.has_flag(LANGUAGE_SIGNLANG))
+		return "makes incomprehensible gestures"
 	else
 		return "makes a strange sound."
 

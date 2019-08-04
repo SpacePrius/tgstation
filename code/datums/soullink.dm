@@ -17,6 +17,13 @@
 	sharedSoullinks = null
 	return ..()
 
+/mob/living/send_speech(message, message_range, obj/source, bubble_type, list/spans, datum/language/message_language, message_mode)
+	if(message_language.has_flag(LANGUAGE_SIGNLANG))
+		src.emote("sign", message = compose_message(src, message_language, message, , spans, message_mode))
+		return
+	. = ..()
+	
+	
 
 
 //Keeps track of a Mob->Mob (potentially Player->Player) connection
